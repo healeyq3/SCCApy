@@ -13,10 +13,10 @@ class Node:
         self.fixed_in: List[int] = fixed_in
         self.fixed_out: List[int] = fixed_out
         
-        self.s1_prime : int
-        self.s2_prime : int
-        self.l1_prime : int
-        self.l2_prime : int
+        self.s1_prime : int = s1_prime
+        self.s2_prime : int = s2_prime
+        self.l1_prime : int = l1_prime
+        self.l2_prime : int = l2_prime
         self._ub: float = math.inf
 
     def __eq__(self, other):
