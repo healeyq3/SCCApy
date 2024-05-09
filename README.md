@@ -1,15 +1,14 @@
 # NOTE
 
-As of ~22:00est 05/06/24, this repository contains unfinished code. 
+As of ~22:00est 05/08/24, this repository contains unfinished code. 
 
-To get to the experimentation phase the following steps are necessary.
+However, to get to the experimentation phase only the following steps remain.
 
-1. "Fill out" the choose_subproblem and split_problem functions. This should not be too challenging as I have already established the logic in the attached bab-explanation.pdf and I have already created the boilerplate code.
-2. Finish performing unit testing on the ProblemData, Bounder, and Objective classes.
-3. Create experimentation and automated experimentation files.
-4. Re-read repository to ensure everything is as it should be.
+1. Finish performing unit testing on the ProblemData, Bounder, and Objective classes.
+2. Create experimentation and automated experimentation files.
+3. Re-read repository to ensure everything is as it should be.
 
-I still believe I can finish these agenda items by Wednesday May 8th, with Friday May 10th as a less-ideal case possibility.
+I'm optimistic that I can begin experimentation by EOD Thursday 05/09/24.
 
 Later on agenda items
 1. Abstract the variable fixing like you did the bounding and objective function evaluating.
