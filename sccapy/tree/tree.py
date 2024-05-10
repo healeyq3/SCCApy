@@ -8,8 +8,9 @@ from enum import Enum
 from numpy import argmax, argmin
 
 from sccapy.tree.node import Node
-from sccapy.bounding.bounding_func import Bounder
+from sccapy.utilities.bounding_func import (Bounder, LowerBounder)
 from sccapy.utilities.objective_func import Objective
+# from sccapy.research_algorithms.objective_eval import fval
 
 class BranchStrategy(Enum):
     DFS = 1
@@ -18,7 +19,7 @@ class BranchStrategy(Enum):
 class Tree:
 
     def __init__(self, n1: int, n2: int, s1: int, s2: int,
-                 phi_lb: Bounder, phi_ub: Bounder, obj_fn: Objective) -> None:
+                 phi_ub: Bounder, phi_lb: LowerBounder, obj: Objective) -> None:
         
         self.n1: int = n1
         self.n2: int = n2
@@ -29,9 +30,9 @@ class Tree:
         Node.s1 = s1
         Node.s2 = s2
         
-        self.phi_lb: Bounder = phi_lb
         self.phi_ub: Bounder = phi_ub
-        self.f0 : Objective = obj_fn
+        self.phi_lb: LowerBounder = phi_lb
+        self.f0: Objective = obj
         
         self.LB: float = -math.inf
         self.UB: float = math.inf
@@ -125,9 +126,9 @@ class Tree:
             for i in range(len(fixed_vars)):
                 assert isinstance(fixed_vars[i], int), "the fixed_vars list must contain integers."
             S1 = fixed_vars
-            self._fix_vars(fixed_vars)
+            num_s1_fixed, num_s2_fixed = self._fix_vars(fixed_vars)
         
-        self._create_root_node(S0, S1)
+        self._create_root_node(S0, S1, num_s1_fixed, num_s2_fixed)
 
         ######### SETUP END #########
 
@@ -163,8 +164,7 @@ class Tree:
         self._value = self.LB
         self.solve_time = time.time() - start_time
         return True
-
-
+    
     def _fix_vars(self, proposed_fixed_vars):
             s1_count, s2_count = 0, 0
             for i in proposed_fixed_vars:
@@ -174,24 +174,37 @@ class Tree:
                     s2_count += 1
                 else:
                     raise ValueError("fixed variable indices should be nonnegative and less than n1 + n2.")
+            return (s1_count, s2_count)
+
+
+    # def _fix_vars(self, proposed_fixed_vars):
+    # DELETE THIS. WOULD ONLY MAKE SENSE IF SHRINKING SUBPROBLEMS, WHICH YOU ARE NOT.
+    #         s1_count, s2_count = 0, 0
+    #         for i in proposed_fixed_vars:
+    #             if 0 <= i < self.n1:
+    #                 s1_count += 1
+    #             elif self.n1 <= i <= self.n1 + self.n2 - 1:
+    #                 s2_count += 1
+    #             else:
+    #                 raise ValueError("fixed variable indices should be nonnegative and less than n1 + n2.")
             
-            self.n1 -= s1_count
-            self.s1 -= s1_count
-            Node.n1 -= s1_count
-            Node.s1 -= s1_count
+    #         self.n1 -= s1_count
+    #         self.s1 -= s1_count
+    #         Node.n1 -= s1_count
+    #         Node.s1 -= s1_count
 
-            self.n2 -= s2_count
-            self.s2 -= s2_count
-            Node.n2 -= s2_count
-            Node.s2 -= s2_count
+    #         self.n2 -= s2_count
+    #         self.s2 -= s2_count
+    #         Node.n2 -= s2_count
+    #         Node.s2 -= s2_count
 
-    def _create_root_node(self, S0, S1):
-        root_node: Node = Node(fixed_in=S1, fixed_out=S0, s1_prime=self.s1, s2_prime=self.s2,
-                               l1_prime=self.n1-self.s1, l2_prime=self.n1-self.s2)
+    def _create_root_node(self, S0, S1, s1_prime, s2_prime):
+        root_node: Node = Node(fixed_in=S1, fixed_out=S0, s1_prime=s1_prime, s2_prime=s2_prime,
+                               l1_prime=0, l2_prime=0)
         
         root_node.ub, root_ub_time = self.phi_ub(root_node.fixed_out, root_node.fixed_in)
         self.ub_bound_time += root_ub_time
-        root_lb, root_lb_time = self.phi_lb(root_node.fixed_out, root_node.fixed_in)
+        root_lb, root_lb_time = self.phi_lb()
         self.lb_bound_time += root_lb_time
         
         self.UB = root_node.ub

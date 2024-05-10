@@ -23,7 +23,7 @@ def upper_bound(data: ProblemData, S0: List[int], S1: List[int]) -> Tuple[float,
 
     zeroS1, zeroS2 = [], []
     for i in S0:
-        if i <= n1:
+        if i < n1:
             zeroS1.append(i)
         else:
             zeroS2.append(i-n1)

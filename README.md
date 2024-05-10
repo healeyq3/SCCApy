@@ -13,6 +13,14 @@ I'm optimistic that I can begin experimentation by EOD Thursday 05/09/24.
 Later on agenda items
 1. Abstract the variable fixing like you did the bounding and objective function evaluating.
 
+# Running Tests
+
+Run the command
+
+```bash
+python -m sccapy.tests.test_file_name
+```
+
 # Problem
 
 # Getting Started

@@ -7,7 +7,7 @@ I (Quill) just made some syntactical changes and changes to ensure
 the algorithms worked with my framework.
 """
 
-from typing import List
+from typing import List, Tuple
 import time
 
 import scipy.linalg as LA
@@ -16,14 +16,14 @@ from numpy.linalg import svd
 
 from sccapy.utilities.problem_data import ProblemData
 
-def fval(data: ProblemData, S1: List[int], S0: List[int]) -> Tuple[float, float]:
+def fval(data: ProblemData, S1: List[int]) -> Tuple[float, float]:
     start_time = time.time()
-    n1, n2 = data.n1, data.n2
+    n1 = data.n1
     A, B, C = data.A, data.B, data.C
 
     oneS1, oneS2 = [], []
     for i in S1:
-        if i <= n1:
+        if i < n1:
             oneS1.append(i)
         else:
             oneS2.append(i-n1)

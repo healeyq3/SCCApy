@@ -349,7 +349,7 @@ def bound(n1, m2, S1, S0):
 def fval(n1, m2, S1, S0):
     oneS1, oneS2 = [], []
     for i in S1:
-        if i <= n1:
+        if i < n1:
             oneS1.append(i)
         else:
             oneS2.append(i-n1)
@@ -363,17 +363,26 @@ def fval(n1, m2, S1, S0):
     return max(sigma) 
 
 if __name__ == "__main__":
-    n1, m2, s1, s2 = 40, 40, 10, 10
+    # n1, m2, s1, s2 = 40, 40, 10, 10
+    n1, m2, s1, s2 = 20, 20, 10, 10
     n = n1+m2
 
     ## generate data and compute upper bound at root node
     UB = gen_data(n1, m2, s1, s2)
-    S1 = [1, 19, 24, 34]
-    S0 = [0, 15, 39]
+    print(type(B))
+    # S1 = [1, 19, 24, 34]
+    # S0 = [0, 15, 39]
     S1 = []
     S0 = []
     new_UB = bound(n1, m2, S1, S0)
     print("new UB:", new_UB)
+
+    # S1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]
+    S1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+    print(len(S1))
+
+    val = fval(n1, m2, S1=S1, S0=[])
+    print(val)
 
     ## compute lower bound at root node
     # LB, ltime = localsearch(n1, m2, s1, s2)
