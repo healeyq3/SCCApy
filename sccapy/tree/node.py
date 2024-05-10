@@ -77,7 +77,7 @@ class Node:
     @property
     def is_terminal_leaf(self) -> bool:
         if self.is_x_terminal_leaf and self.is_y_terminal_leaf:
-            sol = self.feasible_solution # go ahead and calculate solution
+            _ = self.feasible_solution # go ahead and calculate solution
             return True
         else:
             return False
@@ -96,7 +96,7 @@ class Node:
         if self.s1_prime_full and self.s2_prime_full:
             return self.fixed_in
         elif self.l1_prime_full and self.l2_prime_full:
-            return list(setdiff1d(list(range(Node.n1 + Node.n2)), self.S0))
+            return list(setdiff1d(list(range(Node.n1 + Node.n2)), self.fixed_out))
         elif self.s1_prime and self.l2_prime_full:
             selected_s2 = [i for i in self.fixed_in if i >= Node.n1]
             selected_l2 = [i for i in self.fixed_out if i >= Node.n1]
