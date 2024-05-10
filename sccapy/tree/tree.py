@@ -10,7 +10,6 @@ from numpy import argmax, argmin
 from sccapy.tree.node import Node
 from sccapy.utilities.bounding_func import (Bounder, LowerBounder)
 from sccapy.utilities.objective_func import Objective
-# from sccapy.research_algorithms.objective_eval import fval
 
 class BranchStrategy(Enum):
     DFS = 1
@@ -102,7 +101,7 @@ class Tree:
         ######### SETUP START #########
         
         start_time = time.time()
-        loop_time = time.time()
+        loop_time = time.time() - start_time
 
         if branch_strategy != "dfs":
             self.branch_strategy: BranchStrategy = BranchStrategy.SHRINK
@@ -125,7 +124,7 @@ class Tree:
         if fixed_vars != None:
             for i in range(len(fixed_vars)):
                 assert isinstance(fixed_vars[i], int), "the fixed_vars list must contain integers."
-            S1 = fixed_vars
+            S1 = deepcopy(fixed_vars)
             num_s1_fixed, num_s2_fixed = self._fix_vars(fixed_vars)
         
         self._create_root_node(S0, S1, num_s1_fixed, num_s2_fixed)
@@ -142,21 +141,27 @@ class Tree:
             # check pruning again: possible LB has been updated since 
             # node was added to L_k
             if node.ub <= self.LB + eps:
-                self.UB = max(self.nodes)
+                ub_node = max(self.nodes)
+                self.UB = ub_node.ub
                 continue
             
             # split problem handles updating LB (if possible)
             # and handles adding the new subproblems to nodes (L_k)
-            self.split_problem(node)
+            self._split_problem(node)
 
-            self.UB = max(self.nodes)
+            # Moved the following to evaluate node function
+            # ub_node = max(self.nodes)
+            # self.UB = ub_node.ub
 
             loop_time = time.time() - start_time
 
             if (self.gap > eps and len(self.nodes) == 0):
                 raise Exception("Node list is empty but GAP is unsatisfactory.")
+            
+            print(f"Iteration {self.num_iter} | current LB = {self.LB} | Number of Open Subproblems = {len(self.nodes)}"
+                + f" | Total Running Time = {loop_time} seconds ", end = "\r") 
         
-        if (timeout > loop_time / 60):
+        if (timeout < loop_time / 60):
             self._status = "solve timed out."
             return False
         
@@ -214,8 +219,7 @@ class Tree:
     
     def _choose_subproblem(self) -> Node:
         if self.branch_strategy == BranchStrategy.SHRINK:
-            to_return_index: int = argmax(self.nodes)
-            return self.nodes.pop(to_return_index)
+            return self.nodes.pop(argmax(self.nodes))
         
         else:
             return self.nodes.pop()
@@ -252,19 +256,28 @@ class Tree:
         var_scores_prime = self._create_var_scores_prime(node)
         chosen_var = argmin(var_scores_prime)
 
+        # print("BRANCHING VAR: ", chosen_var) # DEBUG
+        # print("VAR SCORES PRIME", var_scores_prime)
+
         if (chosen_var < self.n1 and node.is_x_internal_node):
+            # print("x internal 2 new")  # DEBUG
             self._create_left_subproblem(node, chosen_var, x_branch=True)
             self._create_right_subproblem(node, chosen_var, x_branch=True)
         elif (chosen_var < self.n1 and node.s1_prime_full):
+            # print("x internal 1 new")  # DEBUG
             self._create_left_subproblem(node, chosen_var, x_branch=True)
         elif (chosen_var < self.n1 and node.l1_prime_full):
+            # print("x internal 1 new")  # DEBUG
             self._create_right_subproblem(node, chosen_var, x_branch=True)
         elif (chosen_var >= self.n1 and node.is_y_internal_node):
+            # print("y internal 2 new")  # DEBUG
             self._create_left_subproblem(node, chosen_var, x_branch=False)
             self._create_right_subproblem(node, chosen_var, x_branch=False)
         elif (chosen_var >= self.n1 and node.s2_prime_full):
+            # print("y internal 1 new")  # DEBUG
             self._create_left_subproblem(node, chosen_var, x_branch=False)
         elif (chosen_var >= self.n1 and node.l2_prime_full):
+            # print("y internal 1 new")  # DEBUG
             self._create_right_subproblem(node, chosen_var, x_branch=False)
         else:
             raise Exception("Branching code ran into an unexpected case") # TODO: add information here, i.e. print something
@@ -283,15 +296,19 @@ class Tree:
         if node.is_x_terminal_leaf:
             to_return = [math.inf if i < self.n1 else self.variable_scores[i]
                     for i in range(self.n1 + self.n2)]
-        if node.is_y_terminal_leaf:
+        elif node.is_y_terminal_leaf:
             to_return = [math.inf if i >= self.n1 else self.variable_scores[i]
                     for i in range(self.n1 + self.n2)]
+        else:
+            to_return = deepcopy(self.variable_scores)
             
         for index in node.fixed_out:
             to_return[index] = math.inf
         
         for index in node.fixed_in:
             to_return[index] = math.inf
+
+        return to_return
 
     def _create_right_subproblem(self, node: Node, branch_idx: int, x_branch: bool) -> None:
         """
@@ -333,15 +350,21 @@ class Tree:
     def _evaluate_node(self, node: Node) -> None:
         # note that if you want generalilzation of bounding/obj functions then they need
         # to return bound val, bounding time respectively.
+
         if node.is_terminal_leaf:
-            node.ub, obj_find_time = self.f0(node.fixed_out, node.fixed_in)
+            node.ub, obj_find_time = self.f0(S1=node.feasible_solution)
             self.obj_time += obj_find_time
+            ub_node = max(self.nodes + [node])
+            self.UB = ub_node.ub
             if node.ub > self.LB:
                 self.LB = node.ub
                 self.LB_update_iterations.append(self.num_iter)
+                print("LB UPDATED") # DEBUG
             self.feasible_leafs.append(node)
         else:
-            node.ub, bound_time = self.phi_ub(node.fixed_out, node.fixed_in)
-            self.bound_time += bound_time
+            node.ub, bound_time = self.phi_ub(S0=node.fixed_out, S1=node.fixed_in)
+            ub_node = max(self.nodes + [node])
+            self.UB = ub_node.ub
+            self.ub_bound_time += bound_time
             if node.ub > self.LB + self.eps: # PRUNING
                 self.nodes.append(node)

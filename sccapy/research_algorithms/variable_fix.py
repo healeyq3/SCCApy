@@ -17,7 +17,7 @@ from numpy.linalg import svd
 
 from sccapy.utilities.problem_data import ProblemData
 
-def varfix(data: ProblemData, LB: float) -> Tuple[List[int], List[int], List[float]]:
+def varfix(data: ProblemData, LB: float) -> Tuple[List[int], List[int], List[float], float]:
     start_time = time.time()
     n1, n2 = data.n1, data.n2
     A, B, C = data.A, data.B, data.C

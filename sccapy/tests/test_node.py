@@ -55,10 +55,6 @@ terminal_node.ub = 10
 
 class TestNode(unittest.TestCase):
 
-    """
-    Test variable fixing...although this should probably be in the file where I test the tree functions
-    """
-
     def test_global_attributes(self):
         self.assertEqual(n1, Node.n1, "n1 not equal")
         self.assertEqual(n2, Node.n2, "n2 not equal")
