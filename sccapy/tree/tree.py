@@ -36,7 +36,7 @@ class Tree:
         self.LB: float = -math.inf
         self.UB: float = math.inf
         self.nodes: List[Node] = []
-        self.feasible_leafs: List[Node] = [] # only will be >= initial_LB
+        self.feasible_leaves: List[Node] = [] # only will be >= initial_LB
         self.branch_strategy: BranchStrategy = BranchStrategy.DFS
         
         ### Research Specific Objects ###
@@ -360,7 +360,7 @@ class Tree:
                 self.LB = node.ub
                 self.LB_update_iterations.append(self.num_iter)
                 print("LB UPDATED") # DEBUG
-            self.feasible_leafs.append(node)
+            self.feasible_leaves.append(node)
         else:
             node.ub, bound_time = self.phi_ub(S0=node.fixed_out, S1=node.fixed_in)
             ub_node = max(self.nodes + [node])

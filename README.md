@@ -1,21 +1,20 @@
 # NOTE
 
-As of ~22:00est 05/08/24, this repository contains unfinished code. 
+As of ~22:00est 05/10/24, the solver appears to be complete.
 
-However, to get to the experimentation phase only the following steps remain.
+See the test_5_10.py file to run experiments. The project_environment.yml can also be loaded to use the same conda environment that I created for development.
 
-1. Finish performing unit testing on the ProblemData, Bounder, and Objective classes.
-2. Create experimentation and automated experimentation files.
-3. Re-read repository to ensure everything is as it should be.
+To run an experiment, type the following in a terminal window from the main project directory (the same directory level as this README):
 
-I'm optimistic that I can begin experimentation by EOD Thursday 05/09/24.
+```bash
+python test_5-10.py
+```
 
-Later on agenda items
-1. Abstract the variable fixing like you did the bounding and objective function evaluating.
+You will be able to see an iteration counter as the code runs (to best see this I suggest that the terminal window is of at least a medium size).
 
 # Running Tests
 
-Run the command
+Run the following command from the main project directory.
 
 ```bash
 python -m sccapy.tests.test_file_name

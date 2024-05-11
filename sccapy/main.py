@@ -48,7 +48,7 @@ class Problem:
         solution_tree: Tree = Tree(self.data.n1, self.data.n2, self.data.s1, self.data.s2,
                                    phi_ub=phi_ub, phi_lb=phi_lb, obj=obj)
         
-        is_solved = solution_tree.solve(fixed_vars=fixed_vars, var_scores=var_scores, branch_strategy='dfs')
+        is_solved = solution_tree.solve(eps=eps, fixed_vars=fixed_vars, var_scores=var_scores, branch_strategy='dfs')
 
         print(solution_tree._status)
         
